@@ -2,11 +2,19 @@ import cv2
 import os
 import shutil
 import mediapipe as mp
+import pandas as pd
+from sklearn.neighbors import KNeighborsClassifier
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+from dollarpy import Template,Recognizer,Point
 mpDraw = mp.solutions.drawing_utils
 mpPose = mp.solutions.pose
 pose = mpPose.Pose()
 
+dictAccuracy = {
+    "juggle": 0,
+    "dribble": 0,
+    "shoot": 0
+}
 def windowing(seconds,path,arr):
     trainvideo = arr + "1"
     temp = 0
@@ -36,7 +44,6 @@ for arr in os.listdir("videos"):
     arr = arr.removesuffix('.mp4')
     activities.append(arr)
     getactivityduration(path,arr)
-
 def getTrainlandmarks(path,target):
     cap = cv2.VideoCapture(path)
     xl = []
@@ -54,9 +61,7 @@ def getTrainlandmarks(path,target):
         if results.pose_landmarks:
             mpDraw.draw_landmarks(img, results.pose_landmarks, mpPose.POSE_CONNECTIONS)
             for id, lm in enumerate(results.pose_landmarks.landmark):
-                if id == 12:
                     h, w, c = img.shape
-                    # if target is None:
                     labellist.append(target)
                     xl.append(lm.x)
                     yl.append(lm.y)
@@ -69,8 +74,6 @@ def getTrainlandmarks(path,target):
 
 landmarksT , landmarkstemp = [] , []
 labelT , labeltemp = [] , []
-# for i in range(len(os.listdir("")))
-# print(range(len(os.listdir("Windows" + "/" + arr))))
 for i in range(len(activities)):
     for file in os.listdir("Windows" + "/" + activities[i]):
         path = "Windows" + '/' + activities[i] + "/" + file
@@ -82,7 +85,37 @@ for i in range(len(activities)):
 X_test , temp = getTrainlandmarks("finaltest.mp4",None)
 X_train = landmarksT
 y_train = labelT
-
+listtargets = []
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+prediction = knn.predict(X_test)
+flagct = 0
+# df = pd.DataFrame({
+#     "prediction" : prediction
+# })
+# df.to_csv(r'my_data.csv', index=False)
+for i in range(len(prediction)):
+    if prediction[i] == "shoot":
+        dictAccuracy["shoot"] += 1
+    if prediction[i] == "juggle":
+        dictAccuracy["juggle"] += 1
+    if prediction[i] == "dribble":
+        dictAccuracy["dribble"] += 1
+    if flagct == 32:
+        flagct = 0
+        if dictAccuracy["shoot"] > dictAccuracy["juggle"] and dictAccuracy["shoot"] > dictAccuracy["dribble"]:
+            fin_max = "shoot"
+        if dictAccuracy["dribble"] > dictAccuracy["shoot"] and dictAccuracy["dribble"] > dictAccuracy["juggle"]:
+            fin_max = "dribble"
+        if dictAccuracy["juggle"] > dictAccuracy["shoot"] and dictAccuracy["juggle"] > dictAccuracy["dribble"]:
+            fin_max = "juggle"
+        dictAccuracy["juggle"] = 0
+        dictAccuracy["dribble"] = 0
+        dictAccuracy["shoot"] = 0
+        # fin_max = max(dictAccuracy, key=dictAccuracy.get)
+        # print("Maximum value:",fin_max)
+        listtargets.append(fin_max)
+    flagct += 1
 cap = cv2.VideoCapture("finaltest.mp4")
 ct = 0
 while True:
@@ -93,37 +126,14 @@ while True:
     except:
         break
     results = pose.process(imgRGB)
-    # print(results.pose_landmarks)
     if results.pose_landmarks:
         mpDraw.draw_landmarks(img, results.pose_landmarks, mpPose.POSE_CONNECTIONS)
-        # font
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        # org
-        org = (00, 185)
-
-        # fontScale
-        fontScale = 1
-
-        # Red color in BGR
-        color = (0, 0, 255)
-
-        # Line thickness of 2 px
-        thickness = 2
-        from sklearn.neighbors import KNeighborsClassifier
-
-        knn = KNeighborsClassifier(n_neighbors=3)
-        knn.fit(X_train, y_train)
-        prediction = knn.predict(X_test)
-        # print(knn.predict(X_test))
-        knn = prediction[ct]
         ct = ct+1
-        text = knn
-      # Using cv2.putText() method
-        img = cv2.putText(img, text, org, font, fontScale,
-                            color, thickness, cv2.LINE_AA, False)
+        text = listtargets[ct]
+        print(text)
+        img = cv2.putText(img, text, (00, 185), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (0, 0, 255), 2, cv2.LINE_AA, False)
     cv2.imshow("Image", img)
     cv2.waitKey(1)
 cap.release()
 cv2.destroyAllWindows()
-
-
