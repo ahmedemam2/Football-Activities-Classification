@@ -24,8 +24,8 @@ def windowing(seconds,path,arr):
         x = trainvideo[:-1] + str(index) + '.mp4'
         ffmpeg_extract_subclip(path, temp, temp+1, targetname=x)
         # moving to videos folder
-        src = r"C:/Users/Ahmed/PycharmProjects/MediaPipe" + "/" + x
-        dst = r"C:/Users/Ahmed/PycharmProjects/MediaPipe/Windows" + "/" + arr + "/" + x
+        src =  "" + x
+        dst = r"Windows" + "/" + arr + "/" + x
         shutil.move(src, dst)
         temp += 1
 
@@ -68,7 +68,10 @@ def getTrainlandmarks(path,target):
                     h, w, c = img.shape
                     xl.append(lm.x)
                     yl.append(lm.y)
-                    templ.append((lm.x,lm.y))
+                    # templ.append([lm.x,lm.y])
+                    templ.append(lm.x)
+                    templ.append(lm.y)
+
         # cv2.imshow("Image", img)
         # cv2.waitKey(1)
     cap.release()
@@ -96,17 +99,26 @@ df = pd.DataFrame({
 })
 df.to_csv(r'haaa.csv',index=None)
 X_test , temp = getTrainlandmarks("test/finaltest.mp4",None)
+
+X_train = []
+
 X_train = landmarksl
 y_train = labell
-arrs = np.array(X_train)
-print(arrs.shape)
-arrt = np.array(X_test)
-print(arrt.shape)
+np_X_Train = np.array(X_train)
+np_Y_Train = np.array(y_train)
+np_X_Test = np.array(X_test)
 listtargets = []
 knn = KNeighborsClassifier(n_neighbors=3)
-knn.fit(X_train, y_train)
-prediction = knn.predict(X_test)
-confidence = knn.predict_proba(X_test)
+
+
+
+knn.fit([np_X_Train]*26  ,
+        np_Y_Train)
+
+
+
+prediction = knn.predict([np_X_Test]*26)
+confidence = knn.predict_proba([np_X_Test]*26)
 print(confidence)
 testlist = []
 templist = []
