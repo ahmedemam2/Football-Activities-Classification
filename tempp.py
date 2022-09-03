@@ -108,63 +108,63 @@ knn.fit(X_train, y_train)
 prediction = knn.predict(X_test)
 confidence = knn.predict_proba(X_test)
 print(confidence)
-# testlist = []
-# templist = []
-# for i in range(len(confidence)):
-#     testlist.append(confidence[i])
-#     maxx = max(confidence[i][0],confidence[i][1],confidence[i][2])
-#     if maxx > 0.3:
-#         print(maxx)
-#         templist.append(maxx)
-# flagct = 0
-# print(len(confidence))
-# print(len(templist))
-# df = pd.DataFrame({
-#     "prediction" : testlist,
-#     "label": prediction,
-#     "max": templist
-# })
-# df.to_csv(r'TEMP.csv', index=False)
-# for i in range(len(prediction)):
-#     if prediction[i] == "shoot":
-#         dictAccuracy["shoot"] += 1
-#     if prediction[i] == "juggle":
-#         dictAccuracy["juggle"] += 1
-#     if prediction[i] == "dribble":
-#         dictAccuracy["dribble"] += 1
-#     if flagct == 32:
-#         flagct = 0
-#         if dictAccuracy["shoot"] > dictAccuracy["juggle"] and dictAccuracy["shoot"] > dictAccuracy["dribble"]:
-#             fin_max = "shoot"
-#         if dictAccuracy["dribble"] > dictAccuracy["shoot"] and dictAccuracy["dribble"] > dictAccuracy["juggle"]:
-#             fin_max = "dribble"
-#         if dictAccuracy["juggle"] > dictAccuracy["shoot"] and dictAccuracy["juggle"] > dictAccuracy["dribble"]:
-#             fin_max = "juggle"
-#         dictAccuracy["juggle"] = 0
-#         dictAccuracy["dribble"] = 0
-#         dictAccuracy["shoot"] = 0
-#         # fin_max = max(dictAccuracy, key=dictAccuracy.get)
-#         # print("Maximum value:",fin_max)
-#         listtargets.append(fin_max)
-#     flagct += 1
-# cap = cv2.VideoCapture("finaltest.mp4")
-# ct = 0
-# while True:
-#     success, img = cap.read()
-#     success, frames = cap.read()
-#     try:
-#         imgRGB = cv2.cvtColor(frames, cv2.COLOR_BGR2RGB)
-#     except:
-#         break
-#     results = pose.process(imgRGB)
-#     if results.pose_landmarks:
-#         mpDraw.draw_landmarks(img, results.pose_landmarks, mpPose.POSE_CONNECTIONS)
-#         ct = ct+1
-#         text = listtargets[ct]
-#         print(text)
-#         img = cv2.putText(img, text, (00, 185), cv2.FONT_HERSHEY_SIMPLEX, 1,
-#                             (0, 0, 255), 2, cv2.LINE_AA, False)
-#     cv2.imshow("Image", img)
-#     cv2.waitKey(1)
-# cap.release()
-# cv2.destroyAllWindows()
+testlist = []
+templist = []
+for i in range(len(confidence)):
+    testlist.append(confidence[i])
+    maxx = max(confidence[i][0],confidence[i][1],confidence[i][2])
+    if maxx > 0.3:
+        print(maxx)
+        templist.append(maxx)
+flagct = 0
+print(len(confidence))
+print(len(templist))
+df = pd.DataFrame({
+    "prediction" : testlist,
+    "label": prediction,
+    "max": templist
+})
+df.to_csv(r'TEMP.csv', index=False)
+for i in range(len(prediction)):
+    if prediction[i] == "shoot":
+        dictAccuracy["shoot"] += 1
+    if prediction[i] == "juggle":
+        dictAccuracy["juggle"] += 1
+    if prediction[i] == "dribble":
+        dictAccuracy["dribble"] += 1
+    if flagct == 32:
+        flagct = 0
+        if dictAccuracy["shoot"] > dictAccuracy["juggle"] and dictAccuracy["shoot"] > dictAccuracy["dribble"]:
+            fin_max = "shoot"
+        if dictAccuracy["dribble"] > dictAccuracy["shoot"] and dictAccuracy["dribble"] > dictAccuracy["juggle"]:
+            fin_max = "dribble"
+        if dictAccuracy["juggle"] > dictAccuracy["shoot"] and dictAccuracy["juggle"] > dictAccuracy["dribble"]:
+            fin_max = "juggle"
+        dictAccuracy["juggle"] = 0
+        dictAccuracy["dribble"] = 0
+        dictAccuracy["shoot"] = 0
+        # fin_max = max(dictAccuracy, key=dictAccuracy.get)
+        # print("Maximum value:",fin_max)
+        listtargets.append(fin_max)
+    flagct += 1
+cap = cv2.VideoCapture("finaltest.mp4")
+ct = 0
+while True:
+    success, img = cap.read()
+    success, frames = cap.read()
+    try:
+        imgRGB = cv2.cvtColor(frames, cv2.COLOR_BGR2RGB)
+    except:
+        break
+    results = pose.process(imgRGB)
+    if results.pose_landmarks:
+        mpDraw.draw_landmarks(img, results.pose_landmarks, mpPose.POSE_CONNECTIONS)
+        ct = ct+1
+        text = listtargets[ct]
+        print(text)
+        img = cv2.putText(img, text, (00, 185), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (0, 0, 255), 2, cv2.LINE_AA, False)
+    cv2.imshow("Image", img)
+    cv2.waitKey(1)
+cap.release()
+cv2.destroyAllWindows()
